@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VOIDEX — Enter the Void</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#040407;
+  --bg2:#07070f;
+  --crimson:#e8192c;
+  --cg:rgba(232,25,44,.5);
+  --cd:rgba(232,25,44,.15);
+  --cm:rgba(232,25,44,.07);
+  --ember:#ff5500;
+  --eg:rgba(255,85,0,.4);
+  --ed:rgba(255,85,0,.12);
+  --plasma:#00c8ff;
+  --pg:rgba(0,200,255,.35);
+  --pd:rgba(0,200,255,.09);
+  --void:#6b21a8;
+  --vg:rgba(107,33,168,.45);
+  --gold:#b8964a;
+  --gdim:rgba(184,150,74,.12);
+  --w:#f0f0f5;
+  --gr:rgba(240,240,245,.4);
+  --gd:rgba(240,240,245,.07);
+  --fd:'Bebas Neue',sans-serif;
+  --fm:'Share Tech Mono',monospace;
+  --fb:'Rajdhani',sans-serif;
+}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{background:var(--bg);color:var(--w);font-family:var(--fb);overflow-x:hidden;cursor:none;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+ul{list-style:none}
+
+/* CURSOR */
+#cur{position:fixed;width:8px;height:8px;background:var(--crimson);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s,width .25s,height .25s,background .25s;mix-blend-mode:screen}
+#cur-ring{position:fixed;width:36px;height:36px;border:1px solid var(--cg);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s}
+body:has(a:hover) #cur, body:has(button:hover) #cur{width:14px;height:14px;background:var(--w)}
+body:has(a:hover) #cur-ring, body:has(button:hover) #cur-ring{width:52px;height:52px;border-color:rgba(240,240,245,.5)}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:800;height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,5vw,80px);transition:background .5s,backdrop-filter .5s}
+.nav.scrolled{background:rgba(4,4,7,.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--gd)}
+.logo{font-family:var(--fd);font-size:clamp(1.7rem,2.5vw,2.4rem);letter-spacing:.18em;display:flex;align-items:center;gap:0}
+.logo-x{color:var(--crimson);text-shadow:0 0 20px var(--cg);display:inline-block;animation:xPulse 3s ease-in-out infinite}
+@keyframes xPulse{0%,100%{text-shadow:0 0 20px var(--cg)}50%{text-shadow:0 0 40px var(--cg),0 0 80px rgba(232,25,44,.2)}}
+.nav-links{display:flex;gap:clamp(20px,3.5vw,52px)}
+.nav-links a{font-family:var(--fm);font-size:.7rem;letter-spacing:.26em;color:var(--gr);transition:color .3s;position:relative;padding-bottom:4px}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--crimson);transition:width .3s}
+.nav-links a:hover{color:var(--w)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{font-family:var(--fm);font-size:.62rem;letter-spacing:.22em;padding:9px 22px;border:1px solid var(--cd);color:var(--crimson);background:var(--cm);transition:all .3s;clip-path:polygon(0 0,93% 0,100% 35%,100% 100%,7% 100%,0 65%)}
+.nav-cta:hover{background:var(--crimson);color:var(--w);border-color:var(--crimson)}
+
+/* ═══════════════════════════════
+   HERO
+═══════════════════════════════ */
+.hero{position:relative;width:100%;height:100vh;min-height:700px;overflow:hidden;display:flex;align-items:center}
+
+/* canvas */
+#helmet-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+
+/* bg layers */
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.35;filter:saturate(.6) brightness(.6)}
+.hero-vignette{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 80% 80% at 50% 50%,transparent 30%,rgba(4,4,7,.7) 70%,var(--bg) 100%)}
+.hero-noise{position:absolute;inset:0;z-index:3;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none}
+
+/* scan line sweep */
+.hero-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--crimson),transparent);z-index:4;opacity:0;animation:scanSweep 5s ease-in-out infinite 1s}
+@keyframes scanSweep{0%{top:-2px;opacity:0}10%{opacity:.7}90%{opacity:.4}100%{top:100%;opacity:0}}
+
+/* HUD grid */
+.hero-hud{position:absolute;inset:0;z-index:5;pointer-events:none}
+.hero-hud img{width:100%;height:100%;object-fit:cover;opacity:.22;mix-blend-mode:screen}
+.hero-corners{position:absolute;inset:0;z-index:6;pointer-events:none}
+.hero-corners img{width:100%;height:100%;object-fit:cover;opacity:.55}
+
+/* rings */
+.hero-rings{position:absolute;inset:0;z-index:4;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.hero-rings img{width:min(90vw,900px);height:min(90vw,900px);object-fit:contain;opacity:.18;animation:ringsRotate 80s linear infinite}
+@keyframes ringsRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* screen fx */
+.hero-fx{position:absolute;inset:0;z-index:7;pointer-events:none}
+.hero-fx img{width:100%;height:100%;object-fit:cover;opacity:.4;mix-blend-mode:screen}
+
+/* UI */
+.hero-ui{position:absolute;left:clamp(20px,7vw,120px);top:50%;transform:translateY(-50%);z-index:10;max-width:600px}
+.hero-eyebrow{font-family:var(--fm);font-size:.68rem;letter-spacing:.32em;color:var(--crimson);display:flex;align-items:center;gap:14px;margin-bottom:22px;opacity:0;animation:fadeUp .8s .3s forwards}
+.hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--crimson);flex-shrink:0}
+.hero-title{font-family:var(--fd);font-size:clamp(5rem,11vw,13rem);line-height:.82;letter-spacing:.04em;margin-bottom:28px;opacity:0;animation:fadeUp .9s .5s forwards}
+.hero-title-ghost{-webkit-text-stroke:1px rgba(232,25,44,.2);color:transparent}
+.hero-sub{font-size:clamp(.85rem,1.2vw,1rem);line-height:1.75;color:var(--gr);max-width:420px;font-weight:300;margin-bottom:40px;opacity:0;animation:fadeUp .9s .7s forwards}
+.hero-actions{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp .9s .9s forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+.btn-primary{font-family:var(--fm);font-size:.7rem;letter-spacing:.26em;padding:16px 36px;background:var(--crimson);color:var(--w);border:none;cursor:none;position:relative;overflow:hidden;transition:box-shadow .3s,transform .25s;clip-path:polygon(0 0,92% 0,100% 32%,100% 100%,8% 100%,0 68%)}
+.btn-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);pointer-events:none}
+.btn-primary:hover{box-shadow:0 0 40px var(--cg),0 0 80px rgba(232,25,44,.15);transform:translateY(-2px)}
+.btn-secondary{font-family:var(--fm);font-size:.7rem;letter-spacing:.26em;padding:15px 35px;background:transparent;color:var(--w);border:1px solid rgba(240,240,245,.25);cursor:none;transition:all .3s;clip-path:polygon(0 0,92% 0,100% 32%,100% 100%,8% 100%,0 68%)}
+.btn-secondary:hover{border-color:var(--w);background:rgba(240,240,245,.06)}
+
+/* HUD panels */
+.hud-panel{position:absolute;z-index:10;font-family:var(--fm);font-size:.6rem;letter-spacing:.18em;border:1px solid var(--gd);background:rgba(4,4,7,.65);backdrop-filter:blur(8px);padding:14px 16px;min-width:200px;opacity:0;animation:fadeIn .8s 1.2s forwards}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.hud-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--cd),transparent)}
+.panel-tl{top:clamp(90px,12vh,120px);left:clamp(20px,4vw,60px)}
+.panel-tr{top:clamp(90px,12vh,120px);right:clamp(20px,4vw,60px);text-align:right}
+.panel-br{bottom:clamp(80px,12vh,120px);right:clamp(20px,4vw,60px);text-align:right}
+.ph{font-size:.55rem;letter-spacing:.3em;color:var(--crimson);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--cd)}
+.pl{color:var(--gr);margin-bottom:4px;line-height:1.6}
+.pl span{color:var(--w)}
+.pl-live{color:var(--crimson);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Scroll indicator */
+.scroll-ind{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;animation:fadeIn .8s 1.5s forwards}
+.scroll-label{font-family:var(--fm);font-size:.55rem;letter-spacing:.32em;color:var(--gr)}
+.scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--crimson),transparent);animation:scrollPulse 2s ease-in-out infinite}
+@keyframes scrollPulse{0%,100%{transform:scaleY(1);opacity:.6}50%{transform:scaleY(.5);opacity:1}}
+
+/* ═══════════════════════════════
+   STATS BAR
+═══════════════════════════════ */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--gd);border-bottom:1px solid var(--gd);position:relative;z-index:20;background:rgba(4,4,7,.8);backdrop-filter:blur(20px)}
+.stat{padding:clamp(24px,4vh,48px) clamp(20px,3vw,48px);border-right:1px solid var(--gd);position:relative;overflow:hidden;transition:background .3s}
+.stat:last-child{border-right:none}
+.stat:hover{background:var(--cm)}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--crimson),var(--ember));transform:scaleX(0);transform-origin:left;transition:transform .5s}
+.stat:hover::before{transform:scaleX(1)}
+.stat-n{font-family:var(--fd);font-size:clamp(2.4rem,4vw,4.2rem);letter-spacing:.04em;line-height:1;margin-bottom:6px;background:linear-gradient(135deg,var(--w),var(--gr));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-l{font-family:var(--fm);font-size:.58rem;letter-spacing:.28em;color:var(--gr)}
+
+/* ═══════════════════════════════
+   LORE
+═══════════════════════════════ */
+.lore{position:relative;padding:clamp(80px,12vh,160px) clamp(20px,5vw,80px);overflow:hidden}
+.lore-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 0% 50%,rgba(107,33,168,.08) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 100% 50%,rgba(232,25,44,.05) 0%,transparent 60%)}
+.lore-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(232,25,44,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(232,25,44,.025) 1px,transparent 1px);background-size:72px 72px}
+.lore-inner{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:clamp(48px,8vw,120px);align-items:center;max-width:1400px;margin:0 auto}
+.lore-left{}
+.lore-tag{font-family:var(--fm);font-size:.66rem;letter-spacing:.32em;color:var(--plasma);display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.lore-tag::before{content:'';width:22px;height:1px;background:var(--plasma)}
+.lore-h{font-family:var(--fd);font-size:clamp(3.5rem,7vw,8rem);line-height:.85;letter-spacing:.04em;margin-bottom:36px}
+.lore-h span{-webkit-text-stroke:1px rgba(232,25,44,.3);color:transparent}
+.lore-p{font-size:clamp(.85rem,1.1vw,.98rem);line-height:1.85;color:var(--gr);font-weight:300;margin-bottom:20px}
+.lore-divider{width:40px;height:1px;background:var(--crimson);margin:32px 0}
+.lore-right{display:flex;flex-direction:column;gap:2px}
+.lore-card{padding:28px 32px;background:rgba(7,7,15,.7);border:1px solid var(--gd);position:relative;overflow:hidden;transition:border-color .35s,transform .35s}
+.lore-card:hover{border-color:var(--cd);transform:translateX(6px)}
+.lore-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--crimson),var(--void));transform:scaleY(0);transform-origin:top;transition:transform .4s}
+.lore-card:hover::before{transform:scaleY(1)}
+.lore-card-tag{font-family:var(--fm);font-size:.56rem;letter-spacing:.26em;color:var(--crimson);margin-bottom:10px}
+.lore-card-title{font-family:var(--fd);font-size:1.5rem;letter-spacing:.06em;margin-bottom:8px}
+.lore-card-desc{font-size:.82rem;color:var(--gr);line-height:1.65;font-weight:300}
+
+/* ═══════════════════════════════
+   ARSENAL PREVIEW
+═══════════════════════════════ */
+.arsenal{position:relative;padding:clamp(80px,10vh,140px) clamp(20px,5vw,80px);overflow:hidden;background:var(--bg2)}
+.arsenal-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:clamp(40px,6vh,72px);flex-wrap:wrap;gap:24px}
+.sec-tag{font-family:var(--fm);font-size:.66rem;letter-spacing:.32em;color:var(--ember);display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.sec-tag::before{content:'';width:22px;height:1px;background:var(--ember)}
+.sec-h{font-family:var(--fd);font-size:clamp(3rem,6vw,7rem);line-height:.85;letter-spacing:.04em}
+.sec-h em{font-style:normal;color:var(--ember);text-shadow:0 0 30px var(--eg)}
+.arsenal-link{font-family:var(--fm);font-size:.62rem;letter-spacing:.24em;color:var(--gr);display:flex;align-items:center;gap:10px;transition:color .3s}
+.arsenal-link::after{content:'→';transition:transform .3s}
+.arsenal-link:hover{color:var(--ember)}
+.arsenal-link:hover::after{transform:translateX(6px)}
+
+.weapons-row{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.wcard{position:relative;background:rgba(7,7,15,.9);border:1px solid var(--gd);overflow:hidden;cursor:none;transition:border-color .4s,transform .4s}
+.wcard:hover{border-color:rgba(232,25,44,.2);transform:translateY(-6px)}
+.wcard:hover .wcard-img{transform:scale(1.06) translateY(-4px);filter:brightness(1.15) drop-shadow(0 0 30px var(--cg))}
+.wcard:hover .wbar{transform:scaleX(1) !important}
+.wcard:hover .wcard-glow{opacity:1}
+.wcard-glow{position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(232,25,44,.07),transparent);opacity:0;transition:opacity .4s;pointer-events:none}
+.wcard-tier{position:absolute;top:0;right:0;font-family:var(--fm);font-size:.52rem;letter-spacing:.22em;padding:6px 14px;z-index:5}
+.t-leg{background:linear-gradient(90deg,var(--gold),rgba(184,150,74,.6));color:#040407}
+.t-elite{background:rgba(107,33,168,.6);color:rgba(200,160,255,.9);border-bottom:1px solid rgba(107,33,168,.4)}
+.t-std{background:rgba(240,240,245,.06);color:var(--gr);border-bottom:1px solid var(--gd)}
+.wcard-vis{height:200px;display:flex;align-items:center;justify-content:center;position:relative;background:radial-gradient(ellipse at center,rgba(232,25,44,.04),transparent 70%);overflow:hidden}
+.wcard-img{width:80%;height:80%;object-fit:contain;transition:transform .5s,filter .5s;filter:brightness(.95)}
+.wcard-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--crimson),transparent);opacity:0;transition:opacity .3s}
+.wcard:hover .wcard-scan{opacity:1;animation:wScan 2.5s linear infinite}
+@keyframes wScan{0%{top:0}100%{top:100%}}
+.wcard-body{padding:20px 24px 28px}
+.wcard-type{font-family:var(--fm);font-size:.55rem;letter-spacing:.22em;color:var(--ember);margin-bottom:8px}
+.wcard-name{font-family:var(--fd);font-size:2rem;letter-spacing:.06em;line-height:1;margin-bottom:10px}
+.wcard-stats{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.wsr{display:flex;align-items:center;gap:8px}
+.wsn{font-family:var(--fm);font-size:.52rem;letter-spacing:.15em;color:var(--gr);width:58px}
+.wst{flex:1;height:1px;background:var(--gd);position:relative;overflow:hidden}
+.wbar{position:absolute;top:0;left:0;height:100%;transform:scaleX(0);transform-origin:left;transition:transform .7s cubic-bezier(.25,.46,.45,.94)}
+.wsv{font-family:var(--fm);font-size:.56rem;color:var(--w);width:24px;text-align:right}
+.wcard-foot{display:flex;align-items:center;justify-content:space-between}
+.wcard-unlock{font-family:var(--fm);font-size:.56rem;letter-spacing:.14em;color:var(--gr);display:flex;align-items:center;gap:5px}
+.wcard-unlock::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--crimson)}
+.wcard-btn{font-family:var(--fm);font-size:.58rem;letter-spacing:.18em;padding:7px 16px;border:1px solid var(--cd);color:var(--crimson);background:var(--cm);cursor:none;transition:all .25s;clip-path:polygon(0 0,90% 0,100% 40%,100% 100%,10% 100%,0 60%)}
+.wcard-btn:hover{background:var(--crimson);color:var(--w);border-color:var(--crimson)}
+
+/* ═══════════════════════════════
+   SEASON PORTAL
+═══════════════════════════════ */
+.season{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center}
+.season-bg{position:absolute;inset:0;z-index:0}
+.season-bg img{width:100%;height:100%;object-fit:cover;opacity:.4;filter:saturate(.7)}
+.season-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(107,33,168,.25) 0%,rgba(4,4,7,.75) 60%,var(--bg) 100%)}
+.season-content{position:relative;z-index:5;max-width:800px;padding:0 clamp(20px,5vw,60px)}
+.season-tag{font-family:var(--fm);font-size:.68rem;letter-spacing:.35em;color:var(--plasma);display:block;margin-bottom:24px;opacity:0}
+.season-h{font-family:var(--fd);font-size:clamp(4rem,10vw,11rem);line-height:.82;letter-spacing:.04em;margin-bottom:20px;opacity:0}
+.season-ghost{display:block;-webkit-text-stroke:1px rgba(0,200,255,.15);color:transparent}
+.season-sub{font-size:clamp(.85rem,1.2vw,1rem);line-height:1.75;color:var(--gr);font-weight:300;margin-bottom:48px;opacity:0}
+.season-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;opacity:0}
+/* animate on scroll */
+.season.in-view .season-tag{animation:fadeUp .8s .1s forwards}
+.season.in-view .season-h{animation:fadeUp .9s .25s forwards}
+.season.in-view .season-sub{animation:fadeUp .9s .45s forwards}
+.season.in-view .season-actions{animation:fadeUp .9s .6s forwards}
+
+/* ═══════════════════════════════
+   FOOTER
+═══════════════════════════════ */
+footer{position:relative;background:#020204;border-top:1px solid var(--gd);overflow:hidden}
+footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:70%;height:1px;background:linear-gradient(90deg,transparent,var(--cd),var(--ed),var(--cd),transparent)}
+.footer-grid{padding:80px clamp(20px,5vw,80px) 48px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px}
+.f-logo{font-family:var(--fd);font-size:2.4rem;letter-spacing:.16em;display:block;margin-bottom:16px}
+.f-logo span{color:var(--crimson);text-shadow:0 0 20px var(--cg)}
+.f-tag{font-size:.85rem;color:var(--gr);line-height:1.75;max-width:260px;font-weight:300;margin-bottom:24px}
+.f-status{display:inline-flex;align-items:center;gap:8px;font-family:var(--fm);font-size:.58rem;letter-spacing:.18em;color:var(--gr);border:1px solid var(--gd);padding:7px 14px}
+.f-dot{width:5px;height:5px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.f-col-h{font-family:var(--fm);font-size:.6rem;letter-spacing:.28em;color:var(--crimson);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid var(--cd)}
+.f-links{display:flex;flex-direction:column;gap:10px}
+.f-links a{font-size:.85rem;color:var(--gr);font-weight:300;transition:color .25s;padding-left:14px;position:relative}
+.f-links a::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:5px;height:1px;background:var(--cd);transition:width .25s,background .25s}
+.f-links a:hover{color:var(--w)}
+.f-links a:hover::before{width:9px;background:var(--crimson)}
+.footer-bottom{padding:20px clamp(20px,5vw,80px);border-top:1px solid var(--gd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.f-copy,.f-legal a{font-family:var(--fm);font-size:.56rem;letter-spacing:.14em;color:rgba(240,240,245,.18)}
+.f-legal{display:flex;gap:22px}
+.f-legal a:hover{color:var(--gr)}
+footer::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(240,240,245,.005) 3px,rgba(240,240,245,.005) 4px)}
+
+/* SCROLL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .9s cubic-bezier(.25,.46,.45,.94),transform .9s cubic-bezier(.25,.46,.45,.94)}
+.reveal.in-view{opacity:1;transform:translateY(0)}
+.reveal-l{opacity:0;transform:translateX(-40px);transition:opacity .9s,transform .9s}
+.reveal-l.in-view{opacity:1;transform:translateX(0)}
+.reveal-r{opacity:0;transform:translateX(40px);transition:opacity .9s,transform .9s}
+.reveal-r.in-view{opacity:1;transform:translateX(0)}
+.delay-1{transition-delay:.15s}
+.delay-2{transition-delay:.3s}
+.delay-3{transition-delay:.45s}
+.delay-4{transition-delay:.6s}
+
+/* SCROLL-LINKED */
+.scroll-progress{position:fixed;top:78px;left:0;right:0;height:1px;z-index:900;background:var(--gd)}
+.scroll-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--void),var(--crimson),var(--ember));transition:width .05s linear}
+
+@media(max-width:1100px){
+  .lore-inner{grid-template-columns:1fr}
+  .weapons-row{grid-template-columns:1fr 1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .nav-links{display:none}
+  .weapons-row{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat:nth-child(2){border-right:none}
+  .footer-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats{grid-template-columns:1fr}
+  .stat{border-right:none}
+  .hero-ui{left:20px;right:20px}
+  .hud-panel{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<div class="scroll-progress"><div class="scroll-progress-bar" id="spb"></div></div>
+
+<nav class="nav" id="nav">
+  <div class="logo">VOIDE<span class="logo-x">X</span></div>
+  <ul class="nav-links">
+    <li><a href="#hero">Terminal</a></li>
+    <li><a href="arsenal.html">Arsenal</a></li>
+    <li><a href="#lore">Intel</a></li>
+    <li><a href="#season">Campaign</a></li>
+    <li><a href="operators.html">Operators</a></li>
+  </ul>
+  <a href="#season" class="nav-cta">ENTER SYSTEM</a>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero" id="hero">
+  <div class="hero-bg"><img src="assets/images/hero-scene-bg.webp" alt=""/></div>
+  <div class="hero-vignette"></div>
+  <div class="hero-noise"></div>
+  <div class="hero-rings"><img src="assets/images/holographic-rings.png" alt=""/></div>
+  <canvas id="helmet-canvas"></canvas>
+  <div class="hero-hud"><img src="assets/images/hud-main-overlay.png" alt=""/></div>
+  <div class="hero-corners"><img src="assets/images/tactical-corners.png" alt=""/></div>
+  <div class="hero-fx"><img src="assets/images/screen-fx-overlay.png" alt=""/></div>
+  <div class="hero-scan"></div>
+
+  <div class="hero-ui">
+    <div class="hero-eyebrow">// PROJECT IDENTITY // S04 ACTIVE</div>
+    <h1 class="hero-title">VOIDE<span class="hero-title-ghost">X</span></h1>
+    <p class="hero-sub">The ultimate tactical interface. Engineered for military-grade AI synchronicity and hyper-lethal field response protocols. Enter the void or become part of it.</p>
+    <div class="hero-actions">
+      <a href="#season" class="btn-primary">ENTER SYSTEM</a>
+      <a href="#lore" class="btn-secondary">ACCESS INTEL</a>
+    </div>
+  </div>
+
+  <div class="hud-panel panel-tl">
+    <div class="ph">DIAGNOSTICS</div>
+    <div class="pl">CORE.TEMP: <span>OPTIMAL</span></div>
+    <div class="pl">SYNC.RATE: <span>99.87%</span></div>
+    <div class="pl">SHIELD.GEN: <span>ACTIVE</span></div>
+    <div class="pl">STATUS: <span class="pl-live">LIVE</span></div>
+  </div>
+  <div class="hud-panel panel-tr">
+    <div class="ph">LOC.GRID</div>
+    <div class="pl">LAT: <span>45.0298.11</span></div>
+    <div class="pl">LONG: <span>122.8471</span></div>
+    <div class="pl">NET: <span>SECURE [3ms]</span></div>
+  </div>
+  <div class="hud-panel panel-br">
+    <div class="ph">MISSION</div>
+    <div class="pl">OBJ: <span>ALPHA-7</span></div>
+    <div class="pl">RESOURCES: <span>92%</span></div>
+    <div class="pl">HEALTH: <span>100% [FULL]</span></div>
+  </div>
+
+  <div class="scroll-ind">
+    <span class="scroll-label">SCROLL TO INITIALIZE</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ══ STATS ══ -->
+<div class="stats" id="arsenal">
+  <div class="stat reveal delay-1">
+    <div class="stat-n" data-count="48">0M</div>
+    <div class="stat-l">ACTIVE UNITS</div>
+  </div>
+  <div class="stat reveal delay-2">
+    <div class="stat-n" data-count="190">0</div>
+    <div class="stat-l">SECTOR NODES</div>
+  </div>
+  <div class="stat reveal delay-3">
+    <div class="stat-n">S04</div>
+    <div class="stat-l">CURRENT CAMPAIGN</div>
+  </div>
+  <div class="stat reveal delay-4">
+    <div class="stat-n" data-count="2.4">0M</div>
+    <div class="stat-l">DAILY MISSIONS</div>
+  </div>
+</div>
+
+<!-- ══ LORE ══ -->
+<section class="lore" id="lore">
+  <div class="lore-bg"></div>
+  <div class="lore-grid-bg"></div>
+  <div class="lore-inner">
+    <div class="lore-left reveal-l">
+      <div class="lore-tag">// TRANSMISSION DECRYPTED</div>
+      <h2 class="lore-h">FORGED IN THE <span>VOID</span></h2>
+      <p class="lore-p">Formed from salvaged dark-matter reactors at the edge of outer sectors, the VOIDEX combat core bridges cognitive synapse loops with absolute precision.</p>
+      <div class="lore-divider"></div>
+      <p class="lore-p">This combat suite operates on a custom neural-hologram construct, creating tactical advantages through predictive spatial modeling. The operator helmet acts as a transceiver node, locking onto localized target frameworks in real-time.</p>
+      <div style="margin-top:36px"><a href="operators.html" class="btn-secondary" style="display:inline-flex">VIEW OPERATORS →</a></div>
+    </div>
+    <div class="lore-right reveal-r">
+      <div class="lore-card delay-1">
+        <div class="lore-card-tag">// SYSTEM CORE</div>
+        <div class="lore-card-title">NEURAL SYNC ENGINE</div>
+        <p class="lore-card-desc">Direct neural interface between operator consciousness and the VOIDEX AI core. Latency: 0.3ms. Accuracy: 99.87%.</p>
+      </div>
+      <div class="lore-card delay-2">
+        <div class="lore-card-tag">// COMBAT AI</div>
+        <div class="lore-card-title">PREDICTIVE TARGETING</div>
+        <p class="lore-card-desc">Holographic spatial modeling predicts enemy movement 400ms before execution. Autonomous threat assessment and priority ranking.</p>
+      </div>
+      <div class="lore-card delay-3">
+        <div class="lore-card-tag">// DARK MATTER</div>
+        <div class="lore-card-title">VOID REACTOR CORE</div>
+        <p class="lore-card-desc">Self-sustaining dark-matter energy cell. Powers all systems indefinitely. Doubles as a tactical-grade EMP when overclocked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ARSENAL PREVIEW ══ -->
+<section class="arsenal">
+  <div class="arsenal-header">
+    <div>
+      <div class="sec-tag reveal">// WEAPONS DATABASE</div>
+      <h2 class="sec-h reveal delay-1">ARSE<em>NAL</em></h2>
+    </div>
+    <a href="arsenal.html" class="arsenal-link reveal delay-2">VIEW ALL WEAPONS</a>
+  </div>
+  <div class="weapons-row">
+    <div class="wcard reveal delay-1">
+      <div class="wcard-tier t-leg">LEGENDARY</div>
+      <div class="wcard-vis">
+        <img src="assets/images/voidex-helmet.png" alt="VX-PHANTOM" class="wcard-img" style="filter:brightness(.9) hue-rotate(0deg)"/>
+        <div class="wcard-scan"></div>
+      </div>
+      <div class="wcard-body">
+        <div class="wcard-type">// ASSAULT CORE</div>
+        <div class="wcard-name">VX-PHANTOM</div>
+        <div class="wcard-stats">
+          <div class="wsr"><span class="wsn">DAMAGE</span><div class="wst"><div class="wbar" style="width:92%;background:linear-gradient(90deg,var(--crimson),var(--ember))"></div></div><span class="wsv">92</span></div>
+          <div class="wsr"><span class="wsn">RANGE</span><div class="wst"><div class="wbar" style="width:78%;background:linear-gradient(90deg,var(--crimson),var(--ember))"></div></div><span class="wsv">78</span></div>
+          <div class="wsr"><span class="wsn">ACCURACY</span><div class="wst"><div class="wbar" style="width:88%;background:linear-gradient(90deg,var(--crimson),var(--ember))"></div></div><span class="wsv">88</span></div>
+        </div>
+        <div class="wcard-foot"><span class="wcard-unlock">SEASON 04 UNLOCK</span><button class="wcard-btn">EQUIP</button></div>
+      </div>
+      <div class="wcard-glow"></div>
+    </div>
+    <div class="wcard reveal delay-2">
+      <div class="wcard-tier t-elite">ELITE</div>
+      <div class="wcard-vis">
+        <div style="font-family:var(--fd);font-size:5rem;color:rgba(107,33,168,.3);letter-spacing:.1em">W9</div>
+        <div class="wcard-scan"></div>
+      </div>
+      <div class="wcard-body">
+        <div class="wcard-type">// TACTICAL RIFLE</div>
+        <div class="wcard-name">WRAITH-9</div>
+        <div class="wcard-stats">
+          <div class="wsr"><span class="wsn">DAMAGE</span><div class="wst"><div class="wbar" style="width:76%;background:var(--void)"></div></div><span class="wsv">76</span></div>
+          <div class="wsr"><span class="wsn">STEALTH</span><div class="wst"><div class="wbar" style="width:95%;background:var(--void)"></div></div><span class="wsv">95</span></div>
+          <div class="wsr"><span class="wsn">ACCURACY</span><div class="wst"><div class="wbar" style="width:91%;background:var(--void)"></div></div><span class="wsv">91</span></div>
+        </div>
+        <div class="wcard-foot"><span class="wcard-unlock">RANK 28</span><button class="wcard-btn">EQUIP</button></div>
+      </div>
+      <div class="wcard-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(107,33,168,.08),transparent)"></div>
+    </div>
+    <div class="wcard reveal delay-3">
+      <div class="wcard-tier t-std">STANDARD</div>
+      <div class="wcard-vis">
+        <div style="font-family:var(--fd);font-size:5rem;color:rgba(0,200,255,.25);letter-spacing:.1em">SR</div>
+        <div class="wcard-scan"></div>
+      </div>
+      <div class="wcard-body">
+        <div class="wcard-type">// LONG RANGE</div>
+        <div class="wcard-name">ECLIPSE-SR</div>
+        <div class="wcard-stats">
+          <div class="wsr"><span class="wsn">DAMAGE</span><div class="wst"><div class="wbar" style="width:98%;background:var(--plasma)"></div></div><span class="wsv">98</span></div>
+          <div class="wsr"><span class="wsn">RANGE</span><div class="wst"><div class="wbar" style="width:99%;background:var(--plasma)"></div></div><span class="wsv">99</span></div>
+          <div class="wsr"><span class="wsn">FIRE RATE</span><div class="wst"><div class="wbar" style="width:18%;background:var(--plasma)"></div></div><span class="wsv">18</span></div>
+        </div>
+        <div class="wcard-foot"><span class="wcard-unlock">UNLOCKED</span><button class="wcard-btn">EQUIP</button></div>
+      </div>
+      <div class="wcard-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,200,255,.06),transparent)"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEASON CTA ══ -->
+<section class="season" id="season">
+  <div class="season-bg"><img src="assets/images/season-portal-bg.webp" alt=""/></div>
+  <div class="season-overlay"></div>
+  <div class="season-content">
+    <span class="season-tag">// COMMAND PROTOCOL SECURED</span>
+    <h2 class="season-h">SELECT YOUR<br/><span class="season-ghost">CAMPAIGN</span></h2>
+    <p class="season-sub">Season 04 — Void Protocol. 12 new sectors. 8 operator skins. 24 weapon blueprints. The void awakens. Are you ready to enter?</p>
+    <div class="season-actions">
+      <a href="#" class="btn-primary">INITIALIZE SYSTEM BOOT</a>
+      <a href="arsenal.html" class="btn-secondary">VIEW ARSENAL</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <span class="f-logo">VOIDE<span>X</span></span>
+      <p class="f-tag">Next-generation tactical combat interface. Engineered for military-grade AI synchronicity and hyper-lethal field response protocols.</p>
+      <div class="f-status"><span class="f-dot"></span>ALL SYSTEMS OPERATIONAL</div>
+    </div>
+    <div>
+      <div class="f-col-h">NAVIGATION</div>
+      <div class="f-links">
+        <a href="#hero">Terminal</a>
+        <a href="arsenal.html">Arsenal</a>
+        <a href="operators.html">Operators</a>
+        <a href="#lore">Intel</a>
+        <a href="#season">Campaign</a>
+      </div>
+    </div>
+    <div>
+      <div class="f-col-h">DATABASE</div>
+      <div class="f-links">
+        <a href="#">Weapon Schematics</a>
+        <a href="#">Field Protocols</a>
+        <a href="#">Lore Archive</a>
+        <a href="#">Sector Maps</a>
+        <a href="#">Mission Logs</a>
+      </div>
+    </div>
+    <div>
+      <div class="f-col-h">COMMAND</div>
+      <div class="f-links">
+        <a href="#">Operator Status</a>
+        <a href="#">Clan Registry</a>
+        <a href="#">Support Channel</a>
+        <a href="#">System Updates</a>
+        <a href="#">Security</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="f-copy">© 2026 VOIDEX SYSTEM. ALL RIGHTS RESERVED. ENCRYPTED PROTOCOL // TERM 4.02</div>
+    <div class="f-legal">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Three.js via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+/* ── CURSOR ── */
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function ar(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(ar)})();
+
+/* ── NAV SCROLL ── */
+const nav=document.getElementById('nav'),spb=document.getElementById('spb');
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled',scrollY>60);
+  const p=scrollY/(document.body.scrollHeight-innerHeight);
+  spb.style.width=(p*100)+'%';
+});
+
+/* ── THREE.JS HELMET ── */
+(function initThree(){
+  const canvas=document.getElementById('helmet-canvas');
+  const W=canvas.offsetWidth,H=canvas.offsetHeight;
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setSize(W,H);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(45,W/H,.1,100);
+  camera.position.set(0,0,5);
+
+  /* Lights */
+  const amb=new THREE.AmbientLight(0x111118,2);
+  scene.add(amb);
+  const key=new THREE.PointLight(0xe8192c,120,20);
+  key.position.set(-3,2,4);
+  scene.add(key);
+  const fill=new THREE.PointLight(0x6b21a8,60,20);
+  fill.position.set(4,-1,3);
+  scene.add(fill);
+  const rim=new THREE.PointLight(0x00c8ff,40,20);
+  rim.position.set(0,4,-3);
+  scene.add(rim);
+  const eye=new THREE.PointLight(0xe8192c,80,8);
+  eye.position.set(0,.1,.8);
+  scene.add(eye);
+
+  /* Build helmet geometry — high-detail composite */
+  const helmetGroup=new THREE.Group();
+  scene.add(helmetGroup);
+
+  const darkMat=new THREE.MeshStandardMaterial({color:0x0d0d14,metalness:.9,roughness:.25});
+  const glowMat=new THREE.MeshStandardMaterial({color:0xe8192c,metalness:.3,roughness:.6,emissive:new THREE.Color(0xe8192c),emissiveIntensity:2.2});
+  const visorMat=new THREE.MeshStandardMaterial({color:0x111118,metalness:1,roughness:0,envMapIntensity:1});
+  const crackMat=new THREE.MeshStandardMaterial({color:0xe8192c,metalness:.2,roughness:.8,emissive:new THREE.Color(0xff2200),emissiveIntensity:3});
+
+  /* Main dome */
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(1,.7,.7),darkMat);
+  dome.scale.set(1,.95,1);
+  helmetGroup.add(dome);
+
+  /* Visor plate */
+  const visorGeo=new THREE.BoxGeometry(1.3,.38,.12);
+  const visor=new THREE.Mesh(visorGeo,visorMat);
+  visor.position.set(0,.05,.82);
+  visor.rotation.x=.12;
+  helmetGroup.add(visor);
+
+  /* Visor glow strip */
+  const vgGeo=new THREE.BoxGeometry(1.28,.06,.05);
+  const vg=new THREE.Mesh(vgGeo,glowMat);
+  vg.position.set(0,.05,.88);
+  helmetGroup.add(vg);
+
+  /* Cheek plates */
+  [-1,1].forEach(s=>{
+    const cp=new THREE.Mesh(new THREE.BoxGeometry(.32,.5,.18),darkMat);
+    cp.position.set(s*.7,-.15,.55);
+    cp.rotation.y=s*-.18;
+    helmetGroup.add(cp);
+    /* cheek glow accent */
+    const cg=new THREE.Mesh(new THREE.BoxGeometry(.28,.04,.08),glowMat);
+    cg.position.set(s*.7,.06,.65);
+    cg.rotation.y=s*-.18;
+    helmetGroup.add(cg);
+  });
+
+  /* Brow ridge */
+  const brow=new THREE.Mesh(new THREE.BoxGeometry(1.1,.08,.14),darkMat);
+  brow.position.set(0,.28,.8);
+  brow.rotation.x=-.1;
+  helmetGroup.add(brow);
+  const browG=new THREE.Mesh(new THREE.BoxGeometry(.4,.03,.06),glowMat);
+  browG.position.set(0,.28,.88);
+  helmetGroup.add(browG);
+
+  /* Chin */
+  const chin=new THREE.Mesh(new THREE.CylinderGeometry(.55,.5,.28,32,1,false,0,Math.PI),darkMat);
+  chin.position.set(0,-.62,.15);
+  chin.rotation.x=.3;
+  helmetGroup.add(chin);
+
+  /* Chin glow slots */
+  for(let i=0;i<4;i++){
+    const slot=new THREE.Mesh(new THREE.BoxGeometry(.12,.04,.06),glowMat);
+    slot.position.set(-.23+i*.155,-.68,.55);
+    helmetGroup.add(slot);
+  }
+
+  /* Top crest */
+  const crest=new THREE.Mesh(new THREE.BoxGeometry(.18,.22,.8),darkMat);
+  crest.position.set(0,.88,.05);
+  helmetGroup.add(crest);
+  const crestG=new THREE.Mesh(new THREE.BoxGeometry(.12,.04,.6),glowMat);
+  crestG.position.set(0,.88,.05);
+  helmetGroup.add(crestG);
+
+  /* Side ear pieces */
+  [-1,1].forEach(s=>{
+    const ear=new THREE.Mesh(new THREE.CylinderGeometry(.22,.2,.12,16),darkMat);
+    ear.rotation.z=Math.PI/2;
+    ear.position.set(s*1.05,.1,.05);
+    helmetGroup.add(ear);
+    const earG=new THREE.Mesh(new THREE.TorusGeometry(.18,.02,8,16),glowMat);
+    earG.rotation.y=Math.PI/2;
+    earG.position.set(s*1.08,.1,.05);
+    helmetGroup.add(earG);
+  });
+
+  /* Crack network — lava glow lines */
+  const crackPts=[
+    [0,.7,.98],[-.2,.4,.96],[.18,.5,.95],[-.08,.1,.97],[.12,.2,.96],
+    [-.3,.6,.93],[.3,.55,.93],[0,.9,.9],[.15,.85,.88]
+  ];
+  crackPts.forEach(([x,y,z])=>{
+    const c=new THREE.Mesh(new THREE.SphereGeometry(.022,6,6),crackMat);
+    c.position.set(x,y,z);
+    helmetGroup.add(c);
+  });
+
+  /* Crack lines */
+  const lineMat=new THREE.LineBasicMaterial({color:0xff2200,linewidth:2});
+  [[crackPts[0],crackPts[1]],[crackPts[0],crackPts[2]],[crackPts[1],crackPts[3]],[crackPts[2],crackPts[4]],[crackPts[0],crackPts[7]],[crackPts[5],crackPts[1]],[crackPts[6],crackPts[2]]].forEach(([a,b])=>{
+    const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a),new THREE.Vector3(...b)]);
+    helmetGroup.add(new THREE.Line(geo,lineMat));
+  });
+
+  helmetGroup.position.set(2.2,0,0);
+  helmetGroup.rotation.y=-.3;
+
+  /* Mouse parallax */
+  let tRY=0,tRX=0,cRY=0,cRX=0;
+  document.addEventListener('mousemove',e=>{
+    tRY=(e.clientX/innerWidth-.5)*1.2;
+    tRX=(e.clientY/innerHeight-.5)*-.6;
+  });
+
+  /* Scroll-linked: helmet moves & scales as user scrolls */
+  let scrollIntro=0;
+  window.addEventListener('scroll',()=>{
+    const heroH=document.getElementById('hero').offsetHeight;
+    scrollIntro=Math.min(1,scrollY/heroH);
+  });
+
+  /* Emissive pulse */
+  let t=0;
+  function animate(){
+    requestAnimationFrame(animate);
+    t+=.016;
+
+    /* Lerp rotation */
+    cRY+=(tRY-cRY)*.06;
+    cRX+=(tRX-cRX)*.06;
+    helmetGroup.rotation.y=-.3+cRY;
+    helmetGroup.rotation.x=cRX;
+
+    /* Idle float */
+    helmetGroup.position.y=Math.sin(t*.6)*.04;
+
+    /* Scroll: slide right and scale down */
+    const sx=2.2+scrollIntro*1.5;
+    const sc=1-scrollIntro*.4;
+    helmetGroup.position.x=sx;
+    helmetGroup.scale.setScalar(sc);
+    helmetGroup.rotation.z=-scrollIntro*.15;
+
+    /* Pulsing glow */
+    const glow=1.8+Math.sin(t*2.2)*.7;
+    glowMat.emissiveIntensity=glow;
+    crackMat.emissiveIntensity=2+Math.sin(t*3.5)*1.2;
+    eye.intensity=60+Math.sin(t*4)*.30;
+    key.intensity=100+Math.sin(t*1.4)*25;
+
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  /* Resize */
+  window.addEventListener('resize',()=>{
+    const W2=canvas.offsetWidth,H2=canvas.offsetHeight;
+    camera.aspect=W2/H2;camera.updateProjectionMatrix();
+    renderer.setSize(W2,H2);
+  });
+})();
+
+/* ── SCROLL REVEAL ── */
+const revEls=document.querySelectorAll('.reveal,.reveal-l,.reveal-r');
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in-view')});
+},{threshold:.15});
+revEls.forEach(el=>io.observe(el));
+
+/* Season section */
+const seasonIO=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in-view')});
+},{threshold:.2});
+seasonIO.observe(document.querySelector('.season'));
+
+/* ── PARALLAX LAYERS ── */
+let px=0,py=0,cpx=0,cpy=0;
+document.addEventListener('mousemove',e=>{
+  px=(e.clientX/innerWidth-.5);
+  py=(e.clientY/innerHeight-.5);
+});
+(function par(){
+  cpx+=(px-cpx)*.06;cpy+=(py-cpy)*.06;
+  const bg=document.querySelector('.hero-bg img');
+  const rings=document.querySelector('.hero-rings');
+  const hud=document.querySelector('.hero-hud');
+  const corners=document.querySelector('.hero-corners');
+  const ui=document.querySelector('.hero-ui');
+  if(bg)bg.style.transform=`scale(1.06) translate(${cpx*-14}px,${cpy*-10}px)`;
+  if(rings)rings.style.transform=`translate(${cpx*12}px,${cpy*9}px) rotate(${cpx*2}deg)`;
+  if(hud)hud.style.transform=`scale(1.02) translate(${cpx*22}px,${cpy*16}px)`;
+  if(corners)corners.style.transform=`translate(${cpx*-4}px,${cpy*-4}px)`;
+  if(ui)ui.style.transform=`translateY(-50%) translate(${cpx*10}px,${cpy*7}px)`;
+  requestAnimationFrame(par);
+})();
+</script>
+</body>
+</html>

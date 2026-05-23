@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VOIDEX — Arsenal Database</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#040407;--bg2:#07070f;
+  --crimson:#e8192c;--cg:rgba(232,25,44,.5);--cd:rgba(232,25,44,.15);--cm:rgba(232,25,44,.07);
+  --ember:#ff5500;--eg:rgba(255,85,0,.4);--ed:rgba(255,85,0,.12);
+  --plasma:#00c8ff;--pg:rgba(0,200,255,.35);--pd:rgba(0,200,255,.09);
+  --void:#6b21a8;--vg:rgba(107,33,168,.45);--vd:rgba(107,33,168,.12);
+  --gold:#b8964a;--gld:rgba(184,150,74,.12);
+  --w:#f0f0f5;--gr:rgba(240,240,245,.42);--gd:rgba(240,240,245,.07);
+  --fd:'Bebas Neue',sans-serif;--fm:'Share Tech Mono',monospace;--fb:'Rajdhani',sans-serif;
+}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{background:var(--bg);color:var(--w);font-family:var(--fb);overflow-x:hidden;cursor:none;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}ul{list-style:none}
+#cur{position:fixed;width:8px;height:8px;background:var(--ember);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .25s,height .25s}
+#cur-ring{position:fixed;width:36px;height:36px;border:1px solid var(--eg);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s}
+.nav{position:fixed;top:0;left:0;right:0;z-index:800;height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,5vw,80px);background:rgba(4,4,7,.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--gd)}
+.logo{font-family:var(--fd);font-size:clamp(1.7rem,2.5vw,2.4rem);letter-spacing:.18em}
+.logo-x{color:var(--crimson);text-shadow:0 0 20px var(--cg)}
+.nav-links{display:flex;gap:clamp(20px,3.5vw,52px)}
+.nav-links a{font-family:var(--fm);font-size:.7rem;letter-spacing:.26em;color:var(--gr);transition:color .3s;position:relative;padding-bottom:4px}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--ember);transition:width .3s}
+.nav-links a:hover,.nav-links a.act{color:var(--w)}
+.nav-links a:hover::after,.nav-links a.act::after{width:100%}
+.nav-links a.act{color:var(--ember)}
+.nav-cta{font-family:var(--fm);font-size:.62rem;letter-spacing:.22em;padding:9px 22px;border:1px solid var(--ed);color:var(--ember);background:rgba(255,85,0,.06);transition:all .3s;clip-path:polygon(0 0,93% 0,100% 35%,100% 100%,7% 100%,0 65%)}
+.nav-cta:hover{background:var(--ember);color:var(--w)}
+.scroll-progress{position:fixed;top:78px;left:0;right:0;height:1px;z-index:900;background:var(--gd)}
+.scroll-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--void),var(--crimson),var(--ember));transition:width .05s}
+.phero{position:relative;padding:160px clamp(20px,5vw,80px) 100px;overflow:hidden;min-height:70vh;display:flex;align-items:flex-end}
+.phero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 80% 50%,rgba(255,85,0,.06),transparent 65%),radial-gradient(ellipse 50% 70% at 10% 80%,rgba(232,25,44,.07),transparent 60%)}
+.phero-lines{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.phero-lines::before,.phero-lines::after{content:'';position:absolute;left:-100%;right:-100%;height:1px;background:linear-gradient(90deg,transparent,var(--ed),var(--cd),var(--ed),transparent);animation:lineSlide 6s ease-in-out infinite}
+.phero-lines::before{top:35%;animation-delay:0s}
+.phero-lines::after{top:65%;animation-delay:3s}
+@keyframes lineSlide{0%{transform:translateX(-60%);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(60%);opacity:0}}
+.phero-corners{position:absolute;inset:clamp(20px,4vw,60px);border:1px solid var(--gd);pointer-events:none}
+.phero-corners::before,.phero-corners::after{content:'';position:absolute;width:24px;height:24px;border-color:var(--ember);border-style:solid}
+.phero-corners::before{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.phero-corners::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.phero-ghost{position:absolute;right:clamp(20px,5vw,80px);bottom:-40px;font-family:var(--fd);font-size:clamp(10rem,22vw,28rem);line-height:.8;-webkit-text-stroke:1px rgba(255,85,0,.05);color:transparent;pointer-events:none;letter-spacing:.04em}
+.phero-content{position:relative;z-index:5}
+.phero-ey{font-family:var(--fm);font-size:.68rem;letter-spacing:.32em;color:var(--ember);display:flex;align-items:center;gap:14px;margin-bottom:22px;opacity:0;animation:fadeUp .8s .2s forwards}
+.phero-ey::before{content:'';width:28px;height:1px;background:var(--ember);flex-shrink:0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.phero-h{font-family:var(--fd);font-size:clamp(5rem,11vw,12rem);line-height:.82;letter-spacing:.04em;margin-bottom:24px;opacity:0;animation:fadeUp .9s .4s forwards}
+.phero-h span{-webkit-text-stroke:1px rgba(255,85,0,.25);color:transparent}
+.phero-sub{font-size:.95rem;line-height:1.75;color:var(--gr);max-width:500px;font-weight:300;opacity:0;animation:fadeUp .9s .6s forwards}
+.filter-wrap{padding:40px clamp(20px,5vw,80px) 0;position:relative;z-index:10}
+.filter-inner{display:flex;align-items:center;gap:0;border:1px solid var(--gd);background:rgba(7,7,15,.8);backdrop-filter:blur(12px)}
+.filter-label{font-family:var(--fm);font-size:.58rem;letter-spacing:.28em;color:var(--gr);padding:14px 20px;border-right:1px solid var(--gd);flex-shrink:0}
+.filter-btns{display:flex;flex:1;overflow-x:auto}
+.fbtn{font-family:var(--fm);font-size:.62rem;letter-spacing:.2em;padding:14px 24px;background:transparent;color:var(--gr);border:none;border-right:1px solid var(--gd);cursor:none;transition:all .25s;flex-shrink:0;white-space:nowrap}
+.fbtn:hover,.fbtn.act{background:rgba(255,85,0,.07);color:var(--ember)}
+.fbtn.act{position:relative}
+.fbtn.act::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--ember)}
+.filter-count{font-family:var(--fm);font-size:.58rem;letter-spacing:.2em;color:var(--gr);padding:14px 20px;margin-left:auto;border-left:1px solid var(--gd);white-space:nowrap}
+.class-band{margin:32px clamp(20px,5vw,80px) 0;padding:16px 24px;border:1px solid rgba(107,33,168,.2);background:linear-gradient(135deg,rgba(107,33,168,.12),rgba(232,25,44,.06));display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.class-band::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--void),var(--crimson),var(--ember))}
+.band-txt{font-family:var(--fm);font-size:.6rem;letter-spacing:.22em;color:var(--gr);display:flex;gap:clamp(12px,3vw,40px);flex-wrap:wrap}
+.band-txt strong{color:var(--w)}
+.band-badge{font-family:var(--fm);font-size:.56rem;letter-spacing:.2em;padding:5px 14px;background:rgba(107,33,168,.25);border:1px solid rgba(107,33,168,.4);color:rgba(180,140,255,.85)}
+.grid-section{padding:40px clamp(20px,5vw,80px) 100px}
+.grid-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid var(--gd)}
+.grid-title{font-family:var(--fd);font-size:1.6rem;letter-spacing:.08em}
+.grid-count{font-family:var(--fm);font-size:.6rem;letter-spacing:.2em;color:var(--gr)}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:2px}
+.wc{position:relative;background:var(--bg2);border:1px solid var(--gd);overflow:hidden;cursor:none;transition:border-color .35s,transform .4s cubic-bezier(.25,.46,.45,.94)}
+.wc:hover{border-color:rgba(255,85,0,.22);transform:translateY(-6px)}
+.wc:hover .wc-img{transform:scale(1.06) translateY(-4px);filter:brightness(1.2) drop-shadow(0 0 24px var(--eg))}
+.wc:hover .wstat-bar{transform:scaleX(1) !important}
+.wc:hover .wc-glow{opacity:1}
+.wc:hover .wc-scan{opacity:1;animation:wcScan 2.5s linear infinite}
+@keyframes wcScan{0%{top:0}100%{top:100%}}
+.wc-glow{position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(255,85,0,.07),transparent);opacity:0;transition:opacity .4s;pointer-events:none}
+.wc-tier{position:absolute;top:0;right:0;font-family:var(--fm);font-size:.52rem;letter-spacing:.22em;padding:6px 14px;z-index:5}
+.t-leg{background:linear-gradient(90deg,var(--gold),rgba(184,150,74,.55));color:#040407;font-weight:700}
+.t-el{background:rgba(107,33,168,.55);color:rgba(200,160,255,.9)}
+.t-std{background:rgba(240,240,245,.06);color:var(--gr)}
+.wc-vis{height:190px;display:flex;align-items:center;justify-content:center;position:relative;background:radial-gradient(ellipse at center,rgba(255,85,0,.04),transparent 70%);overflow:hidden}
+.wc-img{width:78%;height:78%;object-fit:contain;transition:transform .5s,filter .5s}
+.wc-ph{font-family:var(--fd);font-size:5.5rem;letter-spacing:.06em;line-height:1;transition:transform .5s,filter .5s}
+.wc:hover .wc-ph{transform:scale(1.05);filter:drop-shadow(0 0 20px currentColor)}
+.wc-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--ember),transparent);opacity:0;transition:opacity .3s}
+.wc-body{padding:20px 24px 28px}
+.wc-type{font-family:var(--fm);font-size:.54rem;letter-spacing:.22em;color:var(--ember);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.wc-type::before{content:'▸';font-size:.5rem}
+.wc-name{font-family:var(--fd);font-size:1.9rem;letter-spacing:.05em;line-height:1;margin-bottom:8px}
+.wc-desc{font-size:.78rem;color:var(--gr);line-height:1.6;font-weight:300;margin-bottom:18px}
+.wc-stats{display:flex;flex-direction:column;gap:7px;margin-bottom:20px}
+.wsr{display:flex;align-items:center;gap:8px}
+.wsn{font-family:var(--fm);font-size:.52rem;letter-spacing:.14em;color:var(--gr);width:62px;flex-shrink:0}
+.wst{flex:1;height:1px;background:var(--gd);position:relative;overflow:hidden}
+.wstat-bar{position:absolute;top:0;left:0;height:100%;transform:scaleX(0);transform-origin:left;transition:transform .7s cubic-bezier(.25,.46,.45,.94)}
+.wsv{font-family:var(--fm);font-size:.56rem;color:var(--w);width:24px;text-align:right}
+.wc-foot{display:flex;align-items:center;justify-content:space-between}
+.wc-unlock{font-family:var(--fm);font-size:.56rem;letter-spacing:.14em;color:var(--gr);display:flex;align-items:center;gap:5px}
+.wc-unlock::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--crimson);box-shadow:0 0 4px var(--cg);flex-shrink:0}
+.wc-unlock.locked::before{background:rgba(240,240,245,.2);box-shadow:none}
+.wc-unlock.locked{color:rgba(240,240,245,.2)}
+.wbtn{font-family:var(--fm);font-size:.58rem;letter-spacing:.18em;padding:8px 18px;border:1px solid var(--ed);color:var(--ember);background:var(--ed);cursor:none;transition:all .25s;clip-path:polygon(0 0,90% 0,100% 40%,100% 100%,10% 100%,0 60%)}
+.wbtn:hover{background:var(--ember);color:var(--w)}
+.wc-feat{grid-column:1/-1;flex-direction:row;display:flex;min-height:360px}
+.wc-feat .wc-vis{flex:1;height:auto}
+.wc-feat .wc-body{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:40px}
+.wc-feat .wc-name{font-size:3.5rem}
+.wc-feat .wc-img{width:65%;height:65%}
+.feat-badge{font-family:var(--fm);font-size:.56rem;letter-spacing:.24em;display:inline-flex;align-items:center;gap:8px;color:var(--gold);border:1px solid var(--gld);background:var(--gld);padding:5px 14px;margin-bottom:14px}
+.feat-badge::before{content:'★'}
+.builds{padding:80px clamp(20px,5vw,80px);background:linear-gradient(180deg,var(--bg),rgba(7,7,15,.95))}
+.builds-head{margin-bottom:52px}
+.builds-ey{font-family:var(--fm);font-size:.66rem;letter-spacing:.32em;color:var(--plasma);display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.builds-ey::before{content:'';width:22px;height:1px;background:var(--plasma)}
+.builds-h{font-family:var(--fd);font-size:clamp(3rem,6vw,6.5rem);letter-spacing:.04em;line-height:.88}
+.builds-h span{color:var(--plasma);text-shadow:0 0 30px var(--pg)}
+.builds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.bc{padding:36px 32px;background:rgba(7,7,15,.9);border:1px solid var(--gd);position:relative;overflow:hidden;transition:border-color .35s,transform .35s;cursor:none}
+.bc:hover{border-color:rgba(0,200,255,.15);transform:translateY(-4px)}
+.bc-accent{position:absolute;top:0;left:0;right:0;height:1px;transform:scaleX(0);transform-origin:left;transition:transform .5s}
+.bc:hover .bc-accent{transform:scaleX(1)}
+.bc-num{font-family:var(--fd);font-size:5rem;line-height:.9;-webkit-text-stroke:1px var(--gd);color:transparent;margin-bottom:16px}
+.bc-name{font-family:var(--fd);font-size:1.8rem;letter-spacing:.06em;margin-bottom:10px}
+.bc-desc{font-size:.82rem;color:var(--gr);line-height:1.65;font-weight:300;margin-bottom:24px}
+.bc-tags{display:flex;flex-wrap:wrap;gap:6px}
+.btag{font-family:var(--fm);font-size:.54rem;letter-spacing:.16em;padding:4px 10px;border:1px solid}
+.grad-div{height:1px;margin:0 clamp(20px,5vw,80px);background:linear-gradient(90deg,transparent,var(--cd),var(--ed),var(--cd),transparent)}
+footer{position:relative;background:#020204;border-top:1px solid var(--gd);overflow:hidden}
+footer::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:70%;height:1px;background:linear-gradient(90deg,transparent,var(--cd),var(--ed),var(--cd),transparent)}
+.footer-grid{padding:80px clamp(20px,5vw,80px) 48px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px}
+.f-logo{font-family:var(--fd);font-size:2.4rem;letter-spacing:.16em;display:block;margin-bottom:16px}
+.f-logo span{color:var(--crimson);text-shadow:0 0 20px var(--cg)}
+.f-tag-txt{font-size:.85rem;color:var(--gr);line-height:1.75;max-width:260px;font-weight:300;margin-bottom:24px}
+.f-status{display:inline-flex;align-items:center;gap:8px;font-family:var(--fm);font-size:.58rem;letter-spacing:.18em;color:var(--gr);border:1px solid var(--gd);padding:7px 14px}
+.f-dot{width:5px;height:5px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.f-col-h{font-family:var(--fm);font-size:.6rem;letter-spacing:.28em;color:var(--crimson);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid var(--cd)}
+.f-links{display:flex;flex-direction:column;gap:10px}
+.f-links a{font-size:.85rem;color:var(--gr);font-weight:300;transition:color .25s;padding-left:14px;position:relative}
+.f-links a::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:5px;height:1px;background:var(--cd);transition:width .25s,background .25s}
+.f-links a:hover{color:var(--w)}
+.f-links a:hover::before{width:9px;background:var(--crimson)}
+.footer-bottom{padding:20px clamp(20px,5vw,80px);border-top:1px solid var(--gd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.f-copy,.f-legal a{font-family:var(--fm);font-size:.56rem;letter-spacing:.14em;color:rgba(240,240,245,.18)}
+.f-legal{display:flex;gap:22px}
+.f-legal a:hover{color:var(--gr)}
+footer::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(240,240,245,.005) 3px,rgba(240,240,245,.005) 4px)}
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .9s,transform .9s}
+.reveal.in-view{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.32s}
+@media(max-width:1024px){.builds-grid{grid-template-columns:1fr 1fr}.footer-grid{grid-template-columns:1fr 1fr}.wc-feat{grid-column:1/-1;flex-direction:column}.wc-feat .wc-name{font-size:2.4rem}}
+@media(max-width:768px){.nav-links{display:none}.builds-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div class="scroll-progress"><div class="scroll-progress-bar" id="spb"></div></div>
+<nav class="nav">
+  <div class="logo">VOIDE<span class="logo-x">X</span></div>
+  <ul class="nav-links">
+    <li><a href="index.html">Terminal</a></li>
+    <li><a href="arsenal.html" class="act">Arsenal</a></li>
+    <li><a href="index.html#lore">Intel</a></li>
+    <li><a href="index.html#season">Campaign</a></li>
+    <li><a href="operators.html">Operators</a></li>
+  </ul>
+  <a href="operators.html" class="nav-cta">OPERATORS</a>
+</nav>
+<div class="phero">
+  <div class="phero-bg"></div>
+  <div class="phero-lines"></div>
+  <div class="phero-corners"></div>
+  <div class="phero-ghost">GUN</div>
+  <div class="phero-content">
+    <div class="phero-ey">// WEAPONS DATABASE // 47 UNITS CLASSIFIED</div>
+    <h1 class="phero-h">ARSE<span>NAL</span></h1>
+    <p class="phero-sub">Full-spectrum tactical armament catalog. Access classified weapon schematics, performance matrices, and operator load-out configurations for all active combat zones.</p>
+  </div>
+</div>
+<div class="filter-wrap">
+  <div class="filter-inner">
+    <div class="filter-label">FILTER //</div>
+    <div class="filter-btns">
+      <button class="fbtn act">ALL</button>
+      <button class="fbtn">PRIMARY</button>
+      <button class="fbtn">SECONDARY</button>
+      <button class="fbtn">SUPPORT</button>
+      <button class="fbtn">MELEE</button>
+      <button class="fbtn">LEGENDARY</button>
+      <button class="fbtn">ELITE</button>
+    </div>
+    <div class="filter-count">47 ITEMS</div>
+  </div>
+</div>
+<div class="class-band">
+  <div class="band-txt">
+    <span>CLEARANCE: <strong>LEVEL IV [ALPHA]</strong></span>
+    <span>SYNC RATE: <strong>99.87%</strong></span>
+    <span>STATUS: <strong>LIVE</strong></span>
+    <span>OPERATOR: <strong>SPECTRE_7</strong></span>
+  </div>
+  <div class="band-badge">CLASSIFIED // SPECTRE_ONLY</div>
+</div>
+<div class="grid-section">
+  <div class="grid-header">
+    <span class="grid-title">PRIMARY WEAPONS</span>
+    <span class="grid-count">// 12 CLASSIFIED</span>
+  </div>
+  <div class="wgrid">
+    <div class="wc wc-feat reveal">
+      <div class="wc-vis"><img src="assets/images/voidex-helmet.png" alt="VX-PHANTOM" class="wc-img"/><div class="wc-scan"></div></div>
+      <div class="wc-body">
+        <div class="wc-tier t-leg">LEGENDARY</div>
+        <div class="feat-badge">SIGNATURE WEAPON // S04</div>
+        <div class="wc-type">ASSAULT CORE</div>
+        <div class="wc-name">VX-PHANTOM</div>
+        <p class="wc-desc">Dark-matter charged assault platform with adaptive targeting neural mesh. Reconfigures ballistic output in real-time based on target biometric signature. Classified S-tier loadout for Spectre operators only.</p>
+        <div class="wc-stats">
+          <div class="wsr"><span class="wsn">DAMAGE</span><div class="wst"><div class="wstat-bar" style="width:92%;background:linear-gradient(90deg,var(--crimson),var(--ember))"></div></div><span class="wsv">92</span></div>
+          <div class="wsr"><span class="wsn">RANGE</span><div class="wst"><div class="wstat-bar" style="width:78%;background:linear-gradient(90deg,var(--crimson),var(--ember))"></div></div><span class="wsv">78</span></div>
+          <div class="wsr"><span class="wsn">ACCURACY</span><div class="wst"><div class="wstat-bar" style="width:88%;background:linear-gradient(90deg,var(--crimson),var(--ember))"></div></div><span class="wsv">88</span></div>
+          <div class="wsr"><span class="wsn">FIRE RATE</span><div class="wst"><div class="wstat-bar" style="width:71%;background:linear-gradient(90deg,var(--crimson),var(--ember))"></div></div><span class="wsv">71</span></div>
+        </div>
+        <div class="wc-foot"><span class="wc-unlock">SEASON 04 // UNLOCKED</span><button class="wbtn">EQUIP WEAPON</button></div>
+      </div>
+      <div class="wc-glow"></div>
+    </div>
+    <div class="wc reveal d1">
+      <div class="wc-tier t-el">ELITE</div>
+      <div class="wc-vis"><div class="wc-ph" style="color:rgba(107,33,168,.35)">W9</div><div class="wc-scan"></div></div>
+      <div class="wc-body">
+        <div class="wc-type">TACTICAL RIFLE</div>
+        <div class="wc-name">WRAITH-9</div>
+        <p class="wc-desc">Suppressed breach rifle. Zero acoustic signature. Deep penetration ballistic core.</p>
+        <div class="wc-stats">
+          <div class="wsr"><span class="wsn">DAMAGE</span><div class="wst"><div class="wstat-bar" style="width:76%;background:var(--void)"></div></div><span class="wsv">76</span></div>
+          <div class="wsr"><span class="wsn">STEALTH</span><div class="wst"><div class="wstat-bar" style="width:95%;background:var(--void)"></div></div><span class="wsv">95</span></div>
+          <div class="wsr"><span class="wsn">ACCURACY</span><div class="wst"><div class="wstat-bar" style="width:91%;background:var(--void)"></div></div><span class="wsv">91</span></div>
+        </div>
+        <div class="wc-foot"><span class="wc-unlock">RANK 28 REQUIRED</span><button class="wbtn">EQUIP</button></div>
+      </div>
+      <div class="wc-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(107,33,168,.09),transparent)"></div>
+    </div>
+    <div class="wc reveal d2">
+      <div class="wc-tier t-std">STANDARD</div>
+      <div class="wc-vis"><div class="wc-ph" style="color:rgba(0,200,255,.25)">SR</div><div class="wc-scan"></div></div>
+      <div class="wc-body">
+        <div class="wc-type">LONG RANGE</div>
+        <div class="wc-name">ECLIPSE-SR</div>
+        <p class="wc-desc">Anti-materiel sniper platform. Thermal-optic adaptive zoom. One-shot elimination at 2km.</p>
+        <div class="wc-stats">
+          <div class="wsr"><span class="wsn">DAMAGE</span><div class="wst"><div class="wstat-bar" style="width:98%;background:var(--plasma)"></div></div><span class="wsv">98</span></div>
+          <div class="wsr"><span class="wsn">RANGE</span><div class="wst"><div class="wstat-bar" style="width:99%;background:var(--plasma)"></div></div><span class="wsv">99</span></div>
+          <div class="wsr"><span class="wsn">FIRE RATE</span><div class="wst"><div class="wstat-bar" style="width:18%;background:var(--plasma)"></div></div><span class="wsv">18</span></div>
+        </div>
+        <div class="wc-foot"><span class="wc-unlock">UNLOCKED</span><button class="wbtn">EQUIP</button></div>
+      </div>
+      <div class="wc-glow" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,200,255,.07),transparent)"></div>
+    </div>
+    <div class="wc reveal d3">
+      <div class="wc-tier t-leg">LEGENDARY</div>
+      <div class="wc-vis"><div class="wc-ph" style="color:rgba(255,85,0,.3)">HX</div><div class="wc-scan"></div></div>
+      <div class="wc-body">
+        <div class="wc-type">RAPID FIRE</div>
+        <div class="wc-name">HELLFIRE-X</div>
+        <p class="wc-desc">Fully-automatic void-core SMG. Built for CQB breach operations. Overcharged plasma bolt ejection.</p>
+        <div class="wc-stats">
+          <div class="wsr"><span class="wsn">DAMAGE</span><div class="wst"><div class="wstat-bar" style="width:62%;background:linear-gradient(90deg,var(--gold),var(--ember))"></div></div><span class="wsv">62</span></div>
+          <div class="wsr"><span class="wsn">FIRE RATE</span><div class="wst"><div class="wstat-bar" style="width:96%;background:linear-gradient(90deg,var(--gold),var(--ember))"></div></div><span class="wsv">96</span></div>
+          <div class="wsr"><span class="wsn">CONTROL</span><div class="wst"><div class="wstat-bar" style="width:44%;background:linear-gradient(90deg,var(--gold),var(--ember))"></div></div><span class="wsv">44</span></div>
+        </div>
+        <div class="wc-foot"><span class="wc-unlock locked">LOCKED // LVL 50</span><button class="wbtn" style="opacity:.4;pointer-events:none">LOCKED</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="grad-div"></div>
+<div class="builds">
+  <div class="builds-head">
+    <div class="builds-ey reveal">// TACTICAL CONFIGURATIONS</div>
+    <h2 class="builds-h reveal d1">OPERATOR<br/><span>BUILDS</span></h2>
+  </div>
+  <div class="builds-grid">
+    <div class="bc reveal d1">
+      <div class="bc-accent" style="background:linear-gradient(90deg,var(--plasma),transparent)"></div>
+      <div class="bc-num">01</div>
+      <div class="bc-name">GHOST PROTOCOL</div>
+      <p class="bc-desc">Silent, fast, lethal. Suppressed weapons, light armor, maximum mobility. Designed for deep recon and classified assassination contracts.</p>
+      <div class="bc-tags">
+        <span class="btag" style="color:var(--plasma);border-color:rgba(0,200,255,.15);background:rgba(0,200,255,.05)">WRAITH-9</span>
+        <span class="btag" style="color:var(--plasma);border-color:rgba(0,200,255,.15);background:rgba(0,200,255,.05)">ECLIPSE-SR</span>
+        <span class="btag" style="color:var(--plasma);border-color:rgba(0,200,255,.15);background:rgba(0,200,255,.05)">VOID KNIFE</span>
+      </div>
+    </div>
+    <div class="bc reveal d2">
+      <div class="bc-accent" style="background:linear-gradient(90deg,var(--ember),transparent)"></div>
+      <div class="bc-num">02</div>
+      <div class="bc-name">BREACH INFERNO</div>
+      <p class="bc-desc">Maximum aggression. Heavy weapons, assault armor, area suppression. Built for coordinated front-line breaches and base sieges.</p>
+      <div class="bc-tags">
+        <span class="btag" style="color:var(--ember);border-color:var(--ed);background:rgba(255,85,0,.05)">HELLFIRE-X</span>
+        <span class="btag" style="color:var(--ember);border-color:var(--ed);background:rgba(255,85,0,.05)">VX-PHANTOM</span>
+        <span class="btag" style="color:var(--ember);border-color:var(--ed);background:rgba(255,85,0,.05)">PLASMA CORE</span>
+      </div>
+    </div>
+    <div class="bc reveal d3">
+      <div class="bc-accent" style="background:linear-gradient(90deg,var(--gold),transparent)"></div>
+      <div class="bc-num">03</div>
+      <div class="bc-name">SPECTRE ELITE</div>
+      <p class="bc-desc">Long-range dominance. Adaptive optics, holographic targeting AI, countermeasure array. Strategic elimination protocol.</p>
+      <div class="bc-tags">
+        <span class="btag" style="color:var(--gold);border-color:var(--gld);background:var(--gld)">ECLIPSE-SR</span>
+        <span class="btag" style="color:var(--gold);border-color:var(--gld);background:var(--gld)">TAC VISOR</span>
+        <span class="btag" style="color:var(--gold);border-color:var(--gld);background:var(--gld)">VOID DRONE</span>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>
+  <div class="footer-grid">
+    <div>
+      <span class="f-logo">VOIDE<span>X</span></span>
+      <p class="f-tag-txt">Next-generation tactical combat interface. Engineered for military-grade AI synchronicity and hyper-lethal field response protocols.</p>
+      <div class="f-status"><span class="f-dot"></span>ALL SYSTEMS OPERATIONAL</div>
+    </div>
+    <div><div class="f-col-h">NAVIGATION</div><div class="f-links"><a href="index.html">Terminal</a><a href="arsenal.html">Arsenal</a><a href="operators.html">Operators</a><a href="index.html#lore">Intel</a><a href="index.html#season">Campaign</a></div></div>
+    <div><div class="f-col-h">DATABASE</div><div class="f-links"><a href="#">Weapon Schematics</a><a href="#">Field Protocols</a><a href="#">Lore Archive</a><a href="#">Sector Maps</a><a href="#">Mission Logs</a></div></div>
+    <div><div class="f-col-h">COMMAND</div><div class="f-links"><a href="#">Operator Status</a><a href="#">Clan Registry</a><a href="#">Support Channel</a><a href="#">System Updates</a></div></div>
+  </div>
+  <div class="footer-bottom">
+    <div class="f-copy">© 2026 VOIDEX SYSTEM. ALL RIGHTS RESERVED. ENCRYPTED PROTOCOL // TERM 4.02</div>
+    <div class="f-legal"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Cookies</a></div>
+  </div>
+</footer>
+<script>
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(a)})();
+const spb=document.getElementById('spb');
+window.addEventListener('scroll',()=>{spb.style.width=((scrollY/(document.body.scrollHeight-innerHeight))*100)+'%'});
+document.querySelectorAll('.fbtn').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('.fbtn').forEach(x=>x.classList.remove('act'));this.classList.add('act')}));
+const io=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in-view')}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+document.querySelectorAll('a,button,.wc,.bc').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='14px';cur.style.height='14px';ring.style.width='52px';ring.style.height='52px'});
+  el.addEventListener('mouseleave',()=>{cur.style.width='8px';cur.style.height='8px';ring.style.width='36px';ring.style.height='36px'});
+});
+</script>
+</body>
+</html>
